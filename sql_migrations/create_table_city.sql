@@ -1,0 +1,29 @@
+CREATE SEQUENCE SQ_CITY;
+
+CREATE TABLE TB_CITY
+   (	
+    id NUMBER NOT NULL, 
+    ibge_id NUMBER NOT NULL, 
+    uf VARCHAR2(2) NOT NULL,
+    name VARCHAR2(100) NOT NULL,
+    capital VARCHAR2(100),
+    lon NUMBER(9,6) NOT NULL,
+    lat NUMBER(9,6) NOT NULL,
+    no_accents VARCHAR2(100) NOT NULL,
+    alternative_names VARCHAR2(50),
+    microregion VARCHAR2(100),
+    mesoregion VARCHAR2(100),
+    CONSTRAINT PK_CITY PRIMARY KEY (id), 
+    CONSTRAINT RK_CITY UNIQUE (ibge_id)       
+   );
+   
+CREATE OR REPLACE TRIGGER TR_SQ_CITY
+	BEFORE INSERT ON TB_CITY
+  	FOR EACH ROW
+  	DECLARE
+BEGIN
+	IF( :NEW.id IS NULL )
+  	THEN
+    	SELECT SQ_CITY.NEXTVAL INTO :NEW.id FROM dual;
+  	END IF;
+END;
