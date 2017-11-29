@@ -152,15 +152,35 @@ public class CityDao {
 
     /**
      *
-     * @return - retorna uma lista com todos os objetos City ordenado por Lat e
-     * Lon
+     * @return - retorna uma lista com todos os objetos City ordenado pela latitude
      */
-    public List<City> findAllOrderByLatLon() {
+    public List<City> findAllOrderByLat() {
 
         try {
 
             TypedQuery<City> typedQuery = entityManager
-                    .createNamedQuery("City.findAllOrderByLatLon", City.class);
+                    .createNamedQuery("City.findAllOrderByLat", City.class);
+
+            return typedQuery.getResultList();
+
+        } catch (Exception e) {
+
+            System.err.println(e);
+        }
+
+        return null;
+    }
+    
+    /**
+     *
+     * @return - retorna uma lista com todos os objetos City ordenado pela longitude
+     */
+    public List<City> findAllOrderByLon() {
+
+        try {
+
+            TypedQuery<City> typedQuery = entityManager
+                    .createNamedQuery("City.findAllOrderByLon", City.class);
 
             return typedQuery.getResultList();
 

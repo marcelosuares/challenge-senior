@@ -3,8 +3,10 @@ package br.com.senior.business.facade;
 import br.com.senior.business.dao.CityDao;
 import br.com.senior.business.model.City;
 import br.com.senior.business.model.aux.CitiesDistance;
+import br.com.senior.business.model.aux.StateAndQuantityCities;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -293,27 +295,60 @@ public class CityFacade {
      */
     public CitiesDistance longerDistanceBetweenTwoCities() {
 
-        //obtem uma lista dos objetos City ordenados pela latitude e longitude
-        //assim o primeiro e o ultimo objetos terão a localização mais distante
-        List<City> cityList = cityDao.findAllOrderByLatLon();
+        //obtem uma lista dos objetos City ordenados pela latitude        
+        List<City> cityListOrderByLat = cityDao.findAllOrderByLat();
 
-        //seta city1 o primeito objeto da lista
-        City city1 = cityList.get(0);
+        //obtem uma lista dos objetos City ordenados pela longitude
+        List<City> cityListOrderByLon = cityDao.findAllOrderByLon();
 
-        //seta city2 o ultimo objeto da lista
-        City city2 = cityList.get(cityList.size() - 1);
+        //seta city1 o primeito objeto da lista ordenada pela latitude
+        City city1 = cityListOrderByLat.get(0);
 
-        //obtem a distancia entre as duas cidades referente a sua localização
+        //seta city2 o ultimo objeto da lista ordenada pela latitude
+        City city2 = cityListOrderByLat.get(cityListOrderByLat.size() - 1);
+
+        //obtem a distancia entre as duas cidades referente a sua localização mais distante pela latitude
         double distanceInKilometers = getDistanceInKilometers(
                 city1.getLat(),
                 city1.getLon(),
                 city2.getLat(),
                 city2.getLon());
 
-        //seta os dois objetos City e a distancia entre eles
-        CitiesDistance citiesDistance = new CitiesDistance(city1, city2, distanceInKilometers);
+        //seta os dois objetos City e a distancia entre elas com referencia a maior latitude
+        CitiesDistance citiesDistancecityListOrderByLat
+                = new CitiesDistance(city1, city2, distanceInKilometers);
 
-        return citiesDistance;
+        //seta city1 o primeito objeto da lista ordenada pela longitude
+        city1 = cityListOrderByLon.get(0);
+
+        //seta city2 o ultimo objeto da lista ordenada pela longitude
+        city2 = cityListOrderByLon.get(cityListOrderByLon.size() - 1);
+
+        //obtem a distancia entre as duas cidades referente a sua localização mais distante pela longitude
+        distanceInKilometers = getDistanceInKilometers(
+                city1.getLat(),
+                city1.getLon(),
+                city2.getLat(),
+                city2.getLon());
+
+        //seta os dois objetos City e a distancia entre elas com referencia a maior longitude
+        CitiesDistance citiesDistancecityListOrderByLon
+                = new CitiesDistance(city1, city2, distanceInKilometers);
+
+        //verifica se as cidades são mais distantes por latitude ou longitude 
+        if (citiesDistancecityListOrderByLat.getDistanceInKilometers()
+                > citiesDistancecityListOrderByLon.getDistanceInKilometers()) {
+
+            //caso a distancia pela latitude seja maior retorna as duas cidades com maior
+            //distancia entre elas pela latitude
+            return citiesDistancecityListOrderByLat;
+
+        } else {
+
+            //caso a distancia pela longitude seja maior retorna as duas cidades com maior
+            //distancia entre elas pela longitude
+            return citiesDistancecityListOrderByLon;
+        }
     }
 
     /**
@@ -348,4 +383,69 @@ public class CityFacade {
         return 0.0;
     }
 
+    /**
+     *
+     * @return - retorna uma lista do objeto StateAndQuantityCities que consta a
+     * quantidade de cidades por estado (UF)
+     */
+    public List<StateAndQuantityCities> getQuantityCitiesByState() {
+
+        try {
+            List<City> cityList = findAll();
+            List<StateAndQuantityCities> stateAndQuantityCitiesList = new ArrayList<>();
+
+            //percorre todos os objetos City
+            for (City city : cityList) {
+
+                boolean exists = false;
+                for (StateAndQuantityCities stateAndQuantity : stateAndQuantityCitiesList) {
+
+                    //verifica se o estado está inserido na lista de objetos StateAndQuantityCities
+                    if (stateAndQuantity.getStateName().equals(city.getUf())) {
+
+                        exists = true;
+                        break;
+                    }
+                }
+
+                //caso o estado não tenha sido inserido é criado um novo objeto StateAndQuantityCities
+                if (!exists) {
+
+                    StateAndQuantityCities saq = new StateAndQuantityCities(city.getUf(), null, 0);
+                    stateAndQuantityCitiesList.add(saq);
+                }
+            }
+
+            int index = 0;
+            //faz um loop para fazer a contagem das cidades por estado
+            for (StateAndQuantityCities stateAndQuantityCities : stateAndQuantityCitiesList) {
+
+                for (City city : cityList) {
+
+                    //verifica os estados dos objetos correspondem
+                    if (stateAndQuantityCities.getStateName().equals(city.getUf())) {
+
+                        //incrementa mais um a quantidade
+                        stateAndQuantityCitiesList.get(index)
+                                .setQuantityCities(stateAndQuantityCities.getQuantityCities() + 1);
+                    }
+                }
+
+                index++;
+            }
+
+            //ordena a lista de StateAndQuantityCities pela quantidade de cidades
+            Collections.sort(stateAndQuantityCitiesList,
+                    (StateAndQuantityCities saq1, StateAndQuantityCities saq2)
+                    -> saq1.getQuantityCities().compareTo(saq2.getQuantityCities()));
+
+            return stateAndQuantityCitiesList;
+
+        } catch (Exception e) {
+
+            System.err.println(e);
+        }
+
+        return null;
+    }
 }

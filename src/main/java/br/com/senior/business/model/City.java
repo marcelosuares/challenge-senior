@@ -33,8 +33,11 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "City.findByUf",
             query = "SELECT c FROM City c WHERE c.uf = :uf ORDER BY c.name"),
 
-    @NamedQuery(name = "City.findAllOrderByLatLon",
-            query = "SELECT c FROM City c ORDER BY c.lat, c.lon")
+    @NamedQuery(name = "City.findAllOrderByLat",
+            query = "SELECT c FROM City c ORDER BY c.lat"),
+    
+    @NamedQuery(name = "City.findAllOrderByLon",
+            query = "SELECT c FROM City c ORDER BY c.lon")
 })
 public class City implements Serializable {
 
